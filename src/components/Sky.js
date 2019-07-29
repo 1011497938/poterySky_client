@@ -3,7 +3,7 @@ import * as THREE from 'three/build/three'
 import React from 'react'
 import  './controls/OrbitControls';
 import potery2vec3d from '../data/vec6.json'
-import CameraControllerFPS from '../../node_modules/threejs-camera-controller-multitarget-framing/index'
+// import CameraControllerFPS from '../../node_modules/threejs-camera-controller-multitarget-framing/index'
 // 7月18日
 export default class Sky extends React.Component {
   // constructor(props){
