@@ -1,1 +1,0 @@
-import potery3vec from '../data/potery_vec3d.json'
