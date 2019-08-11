@@ -4,10 +4,11 @@
 class NetWork {
     constructor(){
         this.fetch_url = 'http://localhost:8000/'
-        this.require('init').then(res => console.log(res))
+        // this.require('init').then(res => console.log(res))
     }
 
     // 缓存没有用到
+    // 要加一个timeout
     url2data = {}
     require(url, par = undefined){
         const {url2data} = this
