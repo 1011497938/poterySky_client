@@ -1,0 +1,39 @@
+@keyframes downLikeRainAnimate
+{
+0%   {transform:translateY(-1080px)}
+100% {transform:translateY(1080px)}
+}
+
+.down-like-rain{
+    animation-name: downLikeRainAnimate;
+    animation-duration: 10s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.potery-page{
+    background-image: url('../static/宣纸背景.jpg');
+    background-repeat: no-repeat;
+    background-position: center 0;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.potery-page .stage{
+    perspective: 1000px;
+    position: absolute
+}
+.potery-page .sentence{
+    position: absolute;
+    transform: rotateY(7deg);
+    width: 10
+    /* transition: all 1s; */
+}
+
+.potery-page .word{
+    position: relative;
+    writing-mode:vertical-rl; 
+    text-align: left;
+}

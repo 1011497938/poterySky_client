@@ -8,6 +8,8 @@ class State{
         this.window_height.set(height)
         this.windows_width.set(width)
     }
+
+    
 }
 
 const stateStore = new State()

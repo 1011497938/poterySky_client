@@ -1,0 +1,37 @@
+.scroll-center{
+    position: absolute;
+    z-index: 100;
+    background-image: url('../../static/卷轴/卷轴中.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    /* padding: 10px; */
+    /* overflow: auto; */
+    /* box-shadow: #000000 5px 10px 10px; */
+}
+
+.scroll-left{
+    position: absolute;
+    z-index: 101;
+    background-image: url('../../static/卷轴/卷轴左.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.scroll-right{
+    position: absolute;
+    z-index: 101;
+    background-image: url('../../static/卷轴/卷轴右.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+/* @keyframes keyframe_scroll_left { 
+    0% {left: 50%}
+    100% {left: 20%}
+} */
+/* .animate_scroll_left {
+    animation-name: keyframe_scroll_left;
+    animation-duration: 2s;
+    animation-timing-function: ease;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+} */

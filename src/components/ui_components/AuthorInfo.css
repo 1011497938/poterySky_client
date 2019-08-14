@@ -1,0 +1,9 @@
+.basic-row{
+    position: absolute;
+    left: 0px;
+    width: 100px;
+}
+
+.basic-key{
+    font-weight: bolder
+}
