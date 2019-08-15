@@ -1,5 +1,5 @@
-.input_per_word {
-    background-image: url('../static/tianzige.png');
+.box_per_word {
+    background-image: url('../../static/tianzige.png');
     width: 30px;
     height: 30px;
     position: relative;
@@ -8,12 +8,14 @@
     background-size: 100% 100%;
     background-repeat: no-repeat;
     margin-top: 30px;
-    margin-bottom: 30px
+    margin-bottom: 30px;
+    cursor: pointer;
 }
 
 .seg_center {
     margin-left: 0.5px;
     margin-right: 0.5px;
+    cursor: pointer;
 }
 
 .seg_left {
@@ -24,14 +26,16 @@
 .seg_right {
     margin-left: 0.5px;
     margin-right: 10px;
+    cursor: pointer;
 }
 
 .no_seg {
     margin-left: 10px;
     margin-right: 10px;
+    cursor: pointer;
 }
 
-.input_per_word input{
+.box_per_word input{
     outline: none;
     width: 30px;
     height: 30px;
@@ -40,17 +44,19 @@
     box-shadow: none;
     border: none;
     text-align: center;
+    cursor: pointer;
 }
 
-.input_per_note {
+.box_per_note {
     width: 20px;
     height: 30px;
     position: relative;
     float: left;
-    margin: 30px 10px
+    margin: 30px 10px;
+    cursor: pointer;
 }
 
-.input_per_note input{
+.box_per_note input{
     outline: none;
     width: 10px;
     height: 30px;
@@ -59,13 +65,15 @@
     box-shadow: none;
     border: none;
     text-align: center;
+    cursor: pointer;
 }
 
-.input_per_sentence {
+.box_per_sentence {
     width: 100%;
     height: 30px;
     position: absolute;
     left: 0px;
+    cursor: pointer;
 }
 
 

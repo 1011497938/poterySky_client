@@ -55,6 +55,7 @@
     "react-router-dom": "^5.0.1",
     "react-spring": "^8.0.24",
     "react-three-fiber": "^2.2.5",
+    "react-vis": "^1.11.7",
     "resize-observer": "^1.0.0",
     "resolve": "1.10.0",
     "roughjs": "^3.1.0",

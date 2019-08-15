@@ -1,0 +1,30 @@
+@keyframes mounatin-move{
+    0%   {transform:translateY(-1080px)}
+    100% {transform:translateY(1080px)}
+}
+
+@keyframes titleAnim{
+    0%   {opacity: 1;z-index: 0;}
+    100% {opacity: 0.1; z-index: 0;}
+}
+
+@keyframes searchAnim{
+    0%   {opacity: -0.5; z-index: 1000;}
+    100%  {opacity: 1; z-index: 1000;}
+}
+
+.title{
+    animation-name: titleAnim;
+    animation-duration: 8s;
+    animation-timing-function: ease;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
+.search{
+    animation-name: searchAnim;
+    animation-duration: 10s;
+    animation-timing-function: ease;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}

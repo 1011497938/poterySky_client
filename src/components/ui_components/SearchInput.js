@@ -5,7 +5,7 @@ export default class SearchInput extends React.Component{
     render(){
         const input_width = 150, input_height = 25
         return(
-            <div style={{position: "absolute", top: 32, right: 600,}}>
+            <div style={{position: "absolute", top: 32, right: 600, zIndex: 200}}>
                 <img style={{height: input_height-5, top: 4, left: 6, position: 'absolute', zIndex: 30}} src={maobi_icon} alt=""/>
                 <input 
                 className='input-div' 

@@ -81,14 +81,20 @@ export default class ScrollView extends React.Component{
             this.setState({show_children: true})
         }, 100)
     }
+
+    handleClose(){
+        const {onClose} = this.props
+        if(onClose){
+            onClose()
+        }
+    }
     render(){
         const {width, height} = this.state
         const scroll_width = width*0.6, scroll_height = height*0.6
         // console.log(width, height)
         return(
         <div style={{position: 'relative', width: '100%', height: '100%', }}>
-            
-            <div style={{position: 'relative', width: '100%', height: '100%', background: '#010101', zIndex: 100, opacity: 0.2}}></div>
+            <div style={{position: 'relative', width: '100%', height: '100%', background: '#010101', zIndex: 100, opacity: 0.2}} onClick={this.handleClose.bind(this)}></div>
             <div className='scroll-left animate_scroll_left'
             style={{
                 top: height*0.2, height: scroll_height+10, width: 50,
@@ -98,7 +104,7 @@ export default class ScrollView extends React.Component{
             style={{
                 top: height*0.2, height: scroll_height, 
             }}>
-                <img src={delete_icon} style={{width: 20, position: 'absolute', right: 40, top: 20, cursor: 'pointer', zIndex: 500}} alt=''/>
+                <img onClick={this.handleClose.bind(this)} src={delete_icon} style={{width: 20, position: 'absolute', right: 70, top: 20, cursor: 'pointer', zIndex: 9999}} alt=''/>
                 {this.state.show_children && this.props.children}
             </div>
             <div className='scroll-right animate_scroll_right'

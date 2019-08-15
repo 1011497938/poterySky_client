@@ -29,46 +29,46 @@ export default class WordPage extends React.Component{
             let height = stateStore.window_height.get()
             this.setState({width: width, height: height})
         })
-        // network.require('getSomeWords', {})
-        // .then(words=>{
-        //     const {width, height} = this.state
-
-        //     words = words.map(elm=>{
-        //         return {
-        //             text: elm[0],
-        //             value: elm[1],
-        //             // length: elm[0].split('').length
-        //         }
-        //     })
-        //     const total_value = this.getTotalValue(words)
-        //     words.forEach(elm=> elm.value/=total_value)
-        //     // console.log(words)
-        //     this.setState({data1: words})
-        // })
-
-        const word = '水'
-        network.require('getRelatedWords', {word:word})
+        network.require('getSomeWords', {})
         .then(words=>{
             const {width, height} = this.state
 
-            // console.log(words.map(elm=> elm[0]))
             words = words.map(elm=>{
                 return {
                     text: elm[0],
-                    value: elm[1]*10,
+                    value: elm[1],
                     // length: elm[0].split('').length
                 }
             })
-            words.push({
-                text: word,
-                value: 1*10
-            })
-            // console.log(words)
             const total_value = this.getTotalValue(words)
             words.forEach(elm=> elm.value/=total_value)
             // console.log(words)
             this.setState({data1: words})
         })
+
+        // const word = '水'
+        // network.require('getRelatedWords', {word:word})
+        // .then(words=>{
+        //     const {width, height} = this.state
+
+        //     // console.log(words.map(elm=> elm[0]))
+        //     words = words.map(elm=>{
+        //         return {
+        //             text: elm[0],
+        //             value: elm[1]*10,
+        //             // length: elm[0].split('').length
+        //         }
+        //     })
+        //     words.push({
+        //         text: word,
+        //         value: 1*10
+        //     })
+        //     // console.log(words)
+        //     const total_value = this.getTotalValue(words)
+        //     words.forEach(elm=> elm.value/=total_value)
+        //     // console.log(words)
+        //     this.setState({data1: words})
+        // })
     }
     
 
@@ -87,7 +87,7 @@ export default class WordPage extends React.Component{
                 width={width}
                 height={height}
                 data1={data1}
-                data2={data1}
+                data2={data2}
             />    
         </div>
         )
@@ -172,8 +172,8 @@ class Constrainer {
         })
         points = points.map(elm=>{
             return [
-                elm[0]*width/(max_x-min_x),
-                elm[1]*height/(max_y-min_y)
+                elm[0]*width/(max_x-min_x)/1.2,
+                elm[1]*height/(max_y-min_y)/1.2
             ]
         })
 

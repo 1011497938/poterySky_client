@@ -20,25 +20,11 @@ export default class PoteryInfo extends React.Component {
     }
 
     render() {
+        const {potery} = this.props
         return (
-            <div style={{ position: 'relative', width: '90%', left:'5%',top: '4%',height: '92%', overflowX: 'auto', overflowY: 'hidden' }}>
-                <div className='scroll_container' style={{ position: 'relative', width: 1000, height: '100%',  overflowX: 'hidden', overflowY: 'hidden' }}>
-                    <div style={{ position: 'relative', width: 700, height: '100%', float: 'left' }}>
-                        <PoteryAnalyze/>
-                    </div>
-                    <div style={{ position: 'relative', width: 200, height: '100%', float: 'left' }}>
-
-                    </div>
-                    <div style={{ position: 'relative', width: 200, height: '100%', float: 'left' }}>
-
-                    </div>
-                    <div style={{ position: 'relative', width: 200, height: '100%', float: 'left' }}>
-
-                    </div>
-                    <div style={{ position: 'relative', width: 200, height: '100%', float: 'left' }}>
-
-                    </div>
-
+            <div style={{ position: 'relative', width: '90%', left:'5%',top: '4%',height: '92%', overflowX: 'hidden', overflowY: 'hidden', }}>
+                <div className='scroll_container' style={{ position: 'relative', height: '100%',  overflowX: 'auto', overflowY: 'hidden' }}>
+                    <PoteryAnalyze potery={potery}/>
                 </div>
             </div>
         )

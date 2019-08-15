@@ -18,7 +18,9 @@ class App extends React.Component {
     super(props)
     this.state = {
       width: stateStore.windows_width.get(),
-      height: stateStore.window_height.get()
+      height: stateStore.window_height.get(),
+
+      show_view: stateStore.default_show_view,
     }
   }
   componentWillMount(){
@@ -43,17 +45,20 @@ class App extends React.Component {
       // console.log(width, height)
       this.setState({width: width, height: height})
     })
-
+    this.onViewChange = autorun(()=>{
+      let show_view = stateStore.show_view.get()
+      this.setState({show_view: show_view})
+    })
   }
   // background: 'black'
   render(){
     // console.log(this.props)
-    const {width, height} = this.state
+    const {width, height, show_view} = this.state
     return (
       <div className="App" 
         style={{
           width: '100%', height: '100%', 
-          background: 'white', 
+          // background: 'white', 
           position: 'absolute', top: 0, left: 0,
           overflow: 'hidden',
           // cursor: 'url(' + maobi_icon + '),auto',
@@ -62,14 +67,20 @@ class App extends React.Component {
       >
         <Nav/>
         <ShangtuLogo/>
-        <SearchInput/>
+        {show_view!=='首页' && <SearchInput/>}
         <div style={{position: 'absolute', top: 0, left: 0, width: width, height: height}}>
+
+          {show_view==='首页' && <HomePage/>}
+          {show_view==='群星荟萃' && <AuthorPage/>}
+          {show_view==='裁章剪句' && <PoteryPage/>}
+          {show_view==='逸兴云飞' && <WordPage/>}
+          {show_view==='为你写诗' && <WritePotery/>}
           {/* <SearchPage/> */}
           {/* <HomePage/> */}
           {/* <PoteryPage/> */}
           {/* <WordPage/> */}
           {/* <AuthorPage/> */}
-          <WritePotery/>
+          {/* <WritePotery/> */}
         </div>
       </div>
     );

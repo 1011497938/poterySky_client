@@ -9,7 +9,9 @@ class State{
         this.windows_width.set(width)
     }
 
-    
+    default_show_view =  '群星荟萃' 
+    //'裁章剪句'  //'首页'  
+    show_view = observable.box(this.default_show_view)
 }
 
 const stateStore = new State()

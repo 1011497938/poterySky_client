@@ -1,19 +1,25 @@
 import React from 'react';
 import stateStore from '../manager/stateManager';
-import { autorun } from 'mobx';
+import { autorun, observable } from 'mobx';
 import './WritePotery.css'
 import $ from 'jquery'
 import net_work from '../manager/network';
-import pingshuiyun from '../data/平水韵.json'
-import cilingzhengyun from '../data/词林正韵.json'
-import yun2tone from '../data/韵母2声调.json'
 import * as d3 from 'd3';
+import deepcopy from 'deep-copy'
+import { List } from 'semantic-ui-react'
+import yun_left from '../static/背景云1.svg'
+import yun_right from '../static/背景云2.svg'
+import title from '../static/标题/为你写诗.png'
+import { analyzeWordTone } from '../manager/commonFunction';
 
-const normalLiner  = d3.line()
-.x(d=> d.x)
-.y(d=> d.y)
+const normalLiner = d3.line()
+    .x(d => d.x)
+    .y(d => d.y)
 let auto_word_id = 0
 const notes = new Set(',.。，、＇：∶；?‘’“”〝〞ˆˇ﹕︰﹔﹖﹑·¨….¸;！´？！～—ˉ｜‖＂〃｀@﹫¡¿﹏﹋﹌︴々﹟#﹩$﹠&﹪%*﹡﹢﹦﹤‐￣¯―﹨ˆ˜﹍﹎+=<­­＿_-\ˇ~﹉﹊（）〈〉‹›﹛﹜『』〖〗［］《》〔〕{}「」【】︵︷︿︹︽_﹁﹃︻︶︸﹀︺︾ˉ﹂﹄︼'.split(''))
+let word2info = {}
+let predict = []
+
 class Word {
     constructor(text, sentence, ) {
         this.id = auto_word_id++
@@ -22,37 +28,26 @@ class Word {
         this.former_is_conn = false
         this.sentence = sentence
         this.is_focus = false
+
+        this.in_seg = undefined   //在那个分词里面
+        this.seg_index = 0 //分词中的位置
+    }
+
+    calInSeg() {
+        let { text, } = this, text_num = text.split('').length
+        if (text_num) {
+
+        }
     }
 }
 const unvalid_char = [' ', '', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-$.fn.setCursorPosition = function (position) {
-    if (this.lengh == 0) return this;
-    return $(this).setSelection(position, position);
+const sentiment2color = {
+    '喜': '#ec5737',
+    '怒': '#5d513b',
+    '哀': '#163471',
+    '乐': '#f0c239',
+    '思': '#339999',
 }
-
-$.fn.setSelection = function (selectionStart, selectionEnd) {
-    if (this.lengh == 0) return this;
-    let input = this[0];
-
-    if (input.createTextRange) {
-        var range = input.createTextRange();
-        range.collapse(true);
-        range.moveEnd('character', selectionEnd);
-        range.moveStart('character', selectionStart);
-        range.select();
-    } else if (input.setSelectionRange) {
-        input.focus();
-        input.setSelectionRange(selectionStart, selectionEnd);
-    }
-
-    return this;
-}
-
-$.fn.focusEnd = function () {
-    this.setCursorPosition(this.val().length);
-}
-
-
 export default class WritePotery extends React.Component {
     constructor(props) {
         super(props)
@@ -65,7 +60,8 @@ export default class WritePotery extends React.Component {
             width: width,
             height: height,
             sentences: [new_sentence],  // ['明月几时有,', '把酒问青天', '不知天上宫阙', ' '],
-            title: ''
+            title: '',
+            recommand_list: [],
         }
 
         this.last_input_time = 0
@@ -88,12 +84,12 @@ export default class WritePotery extends React.Component {
     }
 
 
-    checkWordValid(word){
+    checkWordValid(word) {
         return !unvalid_char.includes(word.text)
     }
-    onPoteryChange() {
+    adjustInput() {
         // console.log(this, 'change')
-        let {checkWordValid} = this
+        let { checkWordValid } = this
         let { sentences } = this.state
         const test_en_reg = /[A-Za-z]/; // 判断输入的是不是字母
 
@@ -127,7 +123,7 @@ export default class WritePotery extends React.Component {
                     }
                 }
             })
-            new_sentence = new_sentence.filter(elm => elm && ((checkWordValid(elm)) || elm.is_focus) )
+            new_sentence = new_sentence.filter(elm => elm && ((checkWordValid(elm)) || elm.is_focus))
             new_sentences.push(new_sentence)
         })
         new_sentences = new_sentences.filter(sentence => sentence.length > 0)
@@ -146,24 +142,64 @@ export default class WritePotery extends React.Component {
             new_sentence.push(new Word('', new_sentence))
             sentences.push(new_sentence)
         }
+        return new_sentences
+    }
+    onPoteryChange() {
+        let new_sentences = this.adjustInput()
         this.setState({ sentences: new_sentences })
-        
-        setTimeout(()=>{
-            if(this.last_input_time<=0){
-                net_work.require('analyzePotery', {content: this.getText()})
-                .then(data=>{
-                    console.log(data)
-                })
+
+        setTimeout(() => {
+            if (this.last_input_time <= 0) {
+                net_work.require('analyzePotery', { content: this.getText() })
+                    .then(data => {
+                        // console.log(data)
+                        const { words } = data
+                        for (let word in words) {
+                            words[word].word = word
+                        }
+                        word2info = words
+                        predict = data.predict
+                        let seg_words = Object.keys(word2info)
+                        let sentences = this.adjustInput()
+
+                        // 找到字在哪个词中
+                        sentences.forEach(sentence => {
+                            sentence.forEach((word, start) => {
+                                word.in_seg = undefined
+                            })
+                            // 还要判断下是不是正在输入
+                            sentence.forEach((word, start) => {
+                                if (word.in_seg) {
+                                    return
+                                }
+                                for (let end = sentence.length; end > start; end--) {
+                                    const sub_sentence = sentence.slice(start, end)
+                                    const sub_content = sub_sentence.map(elm => elm.text).join('')
+                                    // console.log(sub_content, seg_words)
+                                    let seg_word = seg_words.find(elm => elm === sub_content)
+                                    if (seg_word) {
+                                        seg_word = deepcopy(word2info[seg_word])
+                                        for (let index = start; index < end; index++) {
+                                            sentence[index].in_seg = seg_word
+                                            sentence[index].seg_index = index - start
+                                        }
+                                    }
+                                }
+                            })
+                        })
+                        this.setState({ sentences: sentences })
+                        // setTimeout(this.onFocusChange.bind(this), 10)
+                    })
             }
         }, 201)
         this.last_input_time = 200
     }
 
-    getText(){
+    getText() {
         const { sentences } = this.state
         let content = ''
-        sentences.forEach(sentence=>{
-            sentence.forEach(word=>{
+        sentences.forEach(sentence => {
+            sentence.forEach(word => {
                 content += word.text
             })
         })
@@ -225,8 +261,28 @@ export default class WritePotery extends React.Component {
         this.setState({ sentences: sentences })
     }
 
+    onFocusChange() {
+        const { sentences, recommand_list } = this.state
+        // console.log(recommand_list)
+        let new_recommand_list = []
+        sentences.forEach(sentence => {
+            sentence.forEach(word => {
+                if (word.is_focus && word.in_seg) {
+                    new_recommand_list = word.in_seg.sim
+                }
+                // else{
+                //     if(word.text===''){
+                //         new_recommand_list = predict
+                //     }
+                // }
+            })
+        })
+        // console.log(recommand_list)
+        if (recommand_list !== new_recommand_list)
+            this.setState({ recommand_list: new_recommand_list })
+    }
     render() {
-        const { width, height, sentences } = this.state
+        const { width, height, sentences, recommand_list } = this.state
 
         // console.log(sentences)
         sentences.forEach(sentence => {
@@ -241,18 +297,36 @@ export default class WritePotery extends React.Component {
         }
         return (
             <div className='write-potery-page'>
+                <img style={{ height: 300, top: '30%', left: '5%', position: 'absolute', zIndex: 1 }} src={title} alt="" />
+                <img style={{ width: 500, top: 100, left: 0, position: 'absolute', zIndex: 0 }} src={yun_left} alt="" />
+                <img style={{ width: 500, top: 100, right: 0, position: 'absolute', zIndex: 0 }} src={yun_right} alt="" />
                 {/* <ScrollView>
-            </ScrollView> */}
-                <div style={{ position: 'absolute', top: 200, left: '30%', width: '100%' }}>
+                </ScrollView> */}
+                <div style={{ position: 'absolute', width: '21%', height: '50%', top: 130, right: "2%", overflowY: 'auto' }}>
+                    <List celled selection verticalAlign='middle'>
+                        {
+                            recommand_list.map((elm, index) => {
+                                return (
+                                    <List.Item key={index}>
+                                        <List.Content>
+                                            <span>{elm}</span>
+                                        </List.Content>
+                                    </List.Item>
+                                )
+                            })
+                        }
+                    </List>
+                </div>
+                <div style={{ position: 'absolute', top: 100, left: '25%', width: '50%', height: 550, overflow: 'auto' }}>
                     {
                         sentences.map((sentence, index) => {
                             // console.log(sentence)
                             return (
-                                <div className='input_per_sentence' style={{ top: index * 80 }} key={index}>
+                                <div className='input_per_sentence' style={{ top: index * 80, width: sentence.length * 50 }} key={index}>
                                     {
                                         sentence.map((word, index) => {
                                             return (
-                                                <InputBox word={word} key={index} onChange={this.onPoteryChange.bind(this)} parent={this} />
+                                                <InputBox word={word} key={index} onChange={this.onPoteryChange.bind(this)} parent={this} onFocusChange={this.onFocusChange.bind(this)} />
                                             )
                                         })
                                     }
@@ -261,6 +335,14 @@ export default class WritePotery extends React.Component {
                         })
                     }
                 </div>
+                <button
+                    style={{
+                        width: 100, background: '#795548', left: width / 2 - 25, 
+                        bottom: 50, position: "absolute", border: 0,
+                        borderRadius: 5, height: 25, color: 'white'
+                    }}>
+                    提交
+                </button>
             </div>
         )
     }
@@ -303,87 +385,120 @@ class InputBox extends React.Component {
             input.focus()
         }
     }
-    drawRhym(){
+    drawRhym() {
         let line_ys = [30, 23, 16, 9, 2]
         const backgroundLine = d3.select(this.refs.backgroundLine)
         backgroundLine.selectAll('path')
-        .data(line_ys.map(elm=> [
-            {x:0, y:elm},
-            {x:60, y:elm},
-        ]))
-        .enter()
-        .append('path')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 1)
-        .attr('stroke-dasharray', '2,2')
-        .attr('d', d=>{
-            return normalLiner(d)
-        })
-        const { word } = this.state, word_length = word.text.split('').lengh
-        // console.log(word.text.lengh)
-        if(word_length>1)
+            .data(line_ys.map(elm => [
+                { x: 0, y: elm },
+                { x: 60, y: elm },
+            ]))
+            .enter()
+            .append('path')
+            .attr('stroke', 'gray')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '2,2')
+            .attr('d', d => {
+                return normalLiner(d)
+            })
+        const { word } = this.state, word_length = word.text.split('').length
+        // console.log(word.text.length)
+        if (word_length > 1)
             return
 
         const rhyme_g = d3.select(this.refs.rhyme)
         const rhyme = analyzeWordTone(word.text)
-        const rhyme2point =  [
-            [[0,4], [1,4]], 
-            [[0,2], [1,4]], 
-            [[0,1], [0.25,0], [1,4]], 
-            [[0,4], [1,0]],
-        ].map(points=>{
-            return points.map(point=> {
+        const rhyme2point = [
+            [[0, 4], [1, 4]],
+            [[0, 2], [1, 4]],
+            [[0, 1], [0.25, 0], [1, 4]],
+            [[0, 4], [1, 0]],
+        ].map(points => {
+            return points.map(point => {
                 return {
-                    x: point[0] * 30 + 7,
+                    x: point[0] * 24 + 3,
                     y: line_ys[point[1]]
                 }
             })
         })
-        const points = rhyme2point[rhyme-1]
+        const points = rhyme2point[rhyme - 1]
         rhyme_g.selectAll('path').remove()
         rhyme_g.selectAll('circle').remove()
-        if(points){
+        if (points) {
             let lines = []
-            points.forEach((point, index)=>{
-                if(points[index+1])
-                    lines.push([point, points[index+1]])
+            points.forEach((point, index) => {
+                if (points[index + 1])
+                    lines.push([point, points[index + 1]])
             })
             // console.log(lines, rhyme, points)
+
+            let color = 'black'
+            if (word.in_seg) {
+                let { sentiment } = word.in_seg
+                if (sentiment && sentiment[1] > 0.2)
+                    color = sentiment2color[sentiment[0]] || color
+                // console.log(sentiment[0], sentiment[1], word.in_seg.word, )
+            }
+
             rhyme_g.selectAll('path')
-            .data(lines)
-            .enter()
-            .append('path')
-            .attr('stroke', 'black')
-            .attr('stroke-width', 1)
-            .attr('d', d=>{
-                return normalLiner(d)
-            })
+                .data(lines)
+                .enter()
+                .append('path')
+                .attr('stroke', color)
+                .attr('stroke-width', 1)
+                .attr('d', d => {
+                    return normalLiner(d)
+                })
 
             rhyme_g.selectAll('circle')
-            .data(points)
-            .enter()
-            .append("circle")
-            .attr('r', 2)
-            .attr('fill', 'black')
-            .attr('cx', d=> d.x)
-            .attr('cy', d=> d.y)
+                .data(points)
+                .enter()
+                .append("circle")
+                .attr('r', 2)
+                .attr('fill', color)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
         }
         // console.log(rhyme, word.text)
     }
     render() {
         const { word } = this.state
-        const { onChange, parent } = this.props
+        const { onChange, parent, onFocusChange } = this.props
+        // console.log(word)
+        let container_classname = ''
+        let margin_class_name = ''
+        if (notes.has(word.text)) {
+            container_classname = 'input_per_note '
+            margin_class_name = ''
+        } else {
+            container_classname = 'input_per_word '
+            if (word.in_seg) {
+                const { seg_index } = word
+                if (seg_index === 0) {
+                    margin_class_name = 'seg_left'
+                } else if (seg_index === word.in_seg.word.split('').length - 1) {
+                    margin_class_name = 'seg_right'
+                } else {
+                    margin_class_name = 'seg_center'
+                }
+            } else {
+                margin_class_name = 'no_seg'
+            }
+        }
+
         return (
-            <div className={notes.has(word.text) ? 'input_per_note' : 'input_per_word'} style={{}}>
+            <div className={container_classname + margin_class_name} style={{}}>
                 <input type='text'
                     ref='input'
                     value={word.text}
                     onClick={(event) => {
                         event.currentTarget.select()
                         word.is_focus = true
+                        onFocusChange()
                     }}
                     onKeyDown={(event) => {
                         word.is_focus = true
+                        onFocusChange()
                         let keynum = window.event ? event.keyCode : event.which;
                         let keychar = String.fromCharCode(keynum);
                         // console.log(keynum)
@@ -403,14 +518,14 @@ class InputBox extends React.Component {
                             parent.onGoRight()
                             event.preventDefault()
                         }
-                        // if(keynum===8){
-                        //     setTimeout(() => {
-                        //         parent.onGoLeft()
-                        //     }, 200);
-                        // }
+                        if (keynum === 8) {
+                            if (word.text === '')
+                                parent.onGoLeft()
+                        }
                         this.last_input_time = 300
                     }}
                     onChange={(event) => {
+                        onFocusChange()
                         word.is_focus = true
                         const dom_elm = event.currentTarget
                         const { value } = dom_elm
@@ -432,56 +547,11 @@ class InputBox extends React.Component {
                         word.is_focus = false
                     }}
                 />
-                <svg style={{top: 37, left: -7, position: 'absolute'}} width={49} height={32}>
+                <svg style={{ position: 'relative', marginTop: 5 }} width={30} height={32}>
                     <g ref='backgroundLine'></g>
                     <g ref='rhyme'></g>
                 </svg>
             </div>
         )
     }
-}
-
-// 处理平水韵
-const word2yun = {}
-const yuns = Object.keys(pingshuiyun)
-const yun2simp_yun = {}
-const yun2rhyme = {}
-for(let yun in pingshuiyun){
-    let words = pingshuiyun[yun].split('')
-    pingshuiyun[yun] = words
-    words.forEach(word=> {
-        word2yun[word] = yun
-    })
-}
-const rhymes = ['平', '上', '去', '入']
-const replace_list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '声', '平', '上', '去', '入']
-yuns.forEach(yun=>{
-    rhymes.forEach(elm=>{
-        if(yun.indexOf(elm)!==-1){
-            yun2rhyme[yun] = elm
-        }
-    })
-
-    let simp_yun = yun
-    replace_list.forEach(word=>{
-        simp_yun = simp_yun.replace(word, '')
-    })
-    replace_list.forEach(word=>{
-        simp_yun = simp_yun.replace(word, '')
-    })
-    yun2simp_yun[yun] = simp_yun
-    return simp_yun
-})
-
-let word2cilin = {}
-for(let bu in cilingzhengyun){
-    const text = cilingzhengyun[bu].split('')
-    text.forEach(word=>{
-        word2cilin[word] = bu
-    })
-}
-
-function analyzeWordTone(word){
-    // console.log(word2yun[word], yun2simp_yun[word2yun[word]], yun2tone[yun2simp_yun[word2yun[word]]])
-    return yun2tone[yun2simp_yun[word2yun[word]]]
 }
