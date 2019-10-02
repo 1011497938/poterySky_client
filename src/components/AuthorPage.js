@@ -178,7 +178,7 @@ export default class AuthorPage extends React.Component {
     }
     render() {
         let { width, height, select_author } = this.state
-        select_author = '苏轼'
+        // select_author = '苏轼'
         return (
             <div className='author-page'>
                 {

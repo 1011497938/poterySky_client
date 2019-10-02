@@ -7,6 +7,9 @@ import './AuthorInfo.css'
 import { List, Menu } from 'semantic-ui-react'
 import PoteryAnalyze from '../graph_component/PoteryAnalyze';
 import shiciliebiao from '../../static/标题/著述.png'
+// import guanxiwang from '../../static/标题/关系网.png'
+import shitu from '../../static/标题/士官.png'
+
 export default class AuthorInfo extends React.Component {
     constructor(props) {
         super(props)
@@ -102,16 +105,23 @@ export default class AuthorInfo extends React.Component {
                                 }
                             </List>
                         </div>
+
+
                     </div>
 
                     {/* 著作 */}
                     <div style={{ position: 'relative', height: '97%', float: 'left', marginLeft: 30 }}>
                         <PoteryAnalyze potery={'p_1345'}/>
                     </div>
+
+                    <div style={{ position: 'relative', width: 100, height: '100%', float: 'left' }}>
+                        <img src={shitu} style={{width: 50, top: 100, position: 'absolute'}} alt=''/>
+                    </div>
+
+                    
                     <div style={{ position: 'relative', width: 200, height: '100%', float: 'left' }}>
 
                     </div>
-
                 </div>
             </div>
         )
